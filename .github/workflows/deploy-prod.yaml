@@ -24,10 +24,10 @@ jobs:
       - run: gcloud auth configure-docker
 
       - name: Build Docker image
-        run: docker build . -t eu.gcr.io/fdk-infra/fdk-dataset-api:latest
+        run: docker build . -t eu.gcr.io/fdk-infra/fdk-dataset-api:$GITHUB_SHA -t eu.gcr.io/fdk-infra/fdk-dataset-api:latest
 
       - name: Publish docker image to Google Cloud
-        run: docker -- push eu.gcr.io/fdk-infra/fdk-dataset-api:latest
+        run: docker -- push eu.gcr.io/fdk-infra/fdk-dataset-api
 
       - name: Apply Helm template
         uses: stefanprodan/kube-tools@v1
@@ -37,7 +37,7 @@ jobs:
             helm init --client-only
             helm repo add fdk https://informasjonsforvaltning.github.io/helm-chart/
             helm fetch --untar --untardir ./helm fdk/fdk-dataset-api
-            helm template --set DOCKER_IMAGE_NAME="eu.gcr.io/fdk-infra/fdk-dataset-api:latest" -f ./helm/fdk-dataset-api/values/production.yaml ./helm/fdk-dataset-api/ > ./kubectlapply.yaml
+            helm template --set DOCKER_IMAGE_NAME="eu.gcr.io/fdk-infra/fdk-dataset-api:$GITHUB_SHA" -f ./helm/fdk-dataset-api/values/production.yaml ./helm/fdk-dataset-api/ > ./kubectlapply.yaml
             cat ./kubectlapply.yaml
             chmod o+w ./kubectlapply.yaml
             cat kubectlapply.yaml
@@ -62,3 +62,4 @@ jobs:
         with:
           token: ${{ secrets.DISPATCH_TOKEN }}
           event-type: deploy-demo
+          client-payload: '{"sha": "${{ github.sha }}"}'
