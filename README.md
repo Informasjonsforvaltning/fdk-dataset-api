@@ -42,3 +42,9 @@ Query parameters
 
 /datasets?title=Postnummer i Norge&returnfields=id,uri,publisher,harvest (returns dataset with title and returnFields)
 
+##Setup
+Clone from github
+`git clone https://github.com/Informasjonsforvaltning/fdk-dataset-api.git`
+
+Build libraries
+`cd fdk-dataset-api/libraries && mvn clean install`
