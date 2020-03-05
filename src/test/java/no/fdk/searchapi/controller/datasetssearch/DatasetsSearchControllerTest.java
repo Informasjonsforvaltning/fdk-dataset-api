@@ -1,6 +1,7 @@
 package no.fdk.searchapi.controller.datasetssearch;
 
 import com.google.common.collect.ImmutableMap;
+import no.dcat.client.referencedata.ReferenceDataClient;
 import no.fdk.searchapi.service.ElasticsearchService;
 import no.fdk.test.testcategories.UnitTest;
 import org.elasticsearch.action.ListenableActionFuture;
@@ -39,8 +40,9 @@ public class DatasetsSearchControllerTest {
         client = mock(Client.class);
         populateMock();
         ElasticsearchService elasticsearchServiceMock = mock(ElasticsearchService.class);
+        ReferenceDataClient referenceDataClient = mock(ReferenceDataClient.class);
         when(elasticsearchServiceMock.getClient()).thenReturn(client);
-        sqs = new DatasetsSearchController(elasticsearchServiceMock);
+        sqs = new DatasetsSearchController(elasticsearchServiceMock, referenceDataClient);
     }
 
     /**
