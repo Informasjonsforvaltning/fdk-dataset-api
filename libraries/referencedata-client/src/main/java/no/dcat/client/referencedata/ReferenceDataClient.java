@@ -3,6 +3,7 @@ package no.dcat.client.referencedata;
 import no.dcat.shared.DataTheme;
 import no.dcat.shared.LosTheme;
 import no.dcat.shared.SkosCode;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -16,12 +17,10 @@ import java.util.stream.Collectors;
 
 public class ReferenceDataClient {
 
+    @Value("${application.referenceDataUrl}")
     private String referenceDataUrl;
-    private Map<String, Map<String, SkosCode>> allCodesCacheByCode;
 
-    public ReferenceDataClient(String referenceDataUrl) {
-        this.referenceDataUrl = referenceDataUrl;
-    }
+    private Map<String, Map<String, SkosCode>> allCodesCacheByCode;
 
     public Map<String, Map<String, SkosCode>> getAllCodes() {
         return allCodesCacheByCode != null ? allCodesCacheByCode : (allCodesCacheByCode = getAllCodesByCode(referenceDataUrl));

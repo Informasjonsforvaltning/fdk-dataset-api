@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static no.fdk.searchapi.controller.datasetssearch.Common.MISSING;
 import static no.fdk.searchapi.controller.datasetssearch.QueryUtil.*;
@@ -241,5 +242,18 @@ class DatasetsSearchQueryBuilder {
             return builder;
         }
 
+        static QueryBuilder keywords(String value, DatasetsSearchQueryBuilder queryBuilder) {
+            String[] keywords = value.toLowerCase().split(",");
+            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+            Stream.of(keywords).forEach(keyword -> {
+                BoolQueryBuilder keywordBoolQueryBuilder = QueryBuilders.boolQuery()
+                        .should(QueryBuilders.matchQuery("keyword.nb", keyword))
+                        .should(QueryBuilders.matchQuery("keyword.nn", keyword))
+                        .should(QueryBuilders.matchQuery("keyword.en", keyword));
+                boolQueryBuilder.must(keywordBoolQueryBuilder);
+
+            });
+            return boolQueryBuilder;
+        }
     }
 }

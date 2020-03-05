@@ -6,6 +6,7 @@ import com.rometools.rome.feed.rss.Description;
 import com.rometools.rome.feed.rss.Guid;
 import com.rometools.rome.feed.rss.Item;
 import com.rometools.rome.feed.synd.SyndPerson;
+import lombok.RequiredArgsConstructor;
 import no.dcat.client.referencedata.ReferenceDataClient;
 import no.fdk.searchapi.service.ElasticsearchService;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -17,7 +18,6 @@ import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -25,7 +25,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -34,7 +33,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
@@ -45,29 +43,18 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
  * Created by nodavsko on 29.09.2016.
  */
 @RestController
+@RequiredArgsConstructor
 public class DatasetsSearchController {
     private static Logger logger = LoggerFactory.getLogger(DatasetsSearchController.class);
-    ReferenceDataClient referenceDataClient;
-    private ElasticsearchService elasticsearch;
 
-    @Value("${application.referenceDataUrl}")
-    private String referenceDataUrl;
+    private final ElasticsearchService elasticsearch;
+    private final ReferenceDataClient referenceDataClient;
 
     @Value("${application.searchApiHostname}")
     private String searchApiHostname;
 
-    @Autowired
-    public DatasetsSearchController(ElasticsearchService elasticsearchService) {
-        this.elasticsearch = elasticsearchService;
-    }
-
     private static boolean hasLOSFilter(Map<String, String> params) {
         return params.containsKey("losTheme");
-    }
-
-    @PostConstruct
-    public void initialize() {
-        this.referenceDataClient = new ReferenceDataClient(referenceDataUrl);
     }
 
     /**
@@ -119,9 +106,9 @@ public class DatasetsSearchController {
 
                 for (String theme : themes) {
                     List<String> expanded = referenceDataClient.expandLOSTemaByLOSPath(theme);
-                    mainTermsWithTheirExpansions.add(expanded.stream().collect(Collectors.joining(",")));
+                    mainTermsWithTheirExpansions.add(String.join(",", expanded));
                 }
-                params.put("losTheme", mainTermsWithTheirExpansions.stream().collect(Collectors.joining("|")));
+                params.put("losTheme", String.join("|", mainTermsWithTheirExpansions));
             }
         }
 
