@@ -255,5 +255,9 @@ class DatasetsSearchQueryBuilder {
             });
             return boolQueryBuilder;
         }
+
+        static QueryBuilder uris(String value, DatasetsSearchQueryBuilder queryBuilder) {
+            return QueryBuilders.termsQuery("uri", value.split(","));
+        }
     }
 }
