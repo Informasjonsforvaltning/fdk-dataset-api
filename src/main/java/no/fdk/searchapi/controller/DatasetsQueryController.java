@@ -1,6 +1,9 @@
 package no.fdk.searchapi.controller;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import no.dcat.datastore.domain.dcat.builders.DcatBuilder;
 import no.dcat.shared.Dataset;
 import no.fdk.searchapi.service.ElasticsearchService;
@@ -91,10 +94,28 @@ public class DatasetsQueryController {
         if (!elasticGetResponse.isExists()) {
             return null;
         }
-        String datasetAsJson = elasticGetResponse.getSourceAsString();
-        logger.trace(String.format("Found dataset: %s", datasetAsJson));
 
-        return new Gson().fromJson(datasetAsJson, Dataset.class);
+        JsonObject dataset = new Gson().toJsonTree(elasticGetResponse.getSourceAsMap()).getAsJsonObject();
+
+        JsonElement distributions = dataset.get("distribution");
+
+        if (distributions != null && !distributions.isJsonNull()) {
+
+            distributions.getAsJsonArray().forEach(d -> {
+                JsonObject distribution = d.getAsJsonObject();
+                JsonElement accessService = distribution.get("accessService");
+
+                if (accessService != null && !accessService.isJsonNull() && accessService.isJsonObject() && !accessService.isJsonArray()) {
+                    JsonArray accessServices = new JsonArray();
+                    accessServices.add(accessService);
+
+                    distribution.add("accessService", accessServices);
+                }
+            });
+
+        }
+
+        return new Gson().fromJson(dataset, Dataset.class);
     }
 
     Dataset getDatasetByUri(String uri) throws Exception {
@@ -115,7 +136,27 @@ public class DatasetsQueryController {
         }
 
         if (hits.length == 1) {
-            return new Gson().fromJson(hits[0].getSourceAsString(), Dataset.class);
+            JsonObject dataset = new Gson().toJsonTree(hits[0].getSourceAsMap()).getAsJsonObject();
+
+            JsonElement distributions = dataset.get("distribution");
+
+            if (distributions != null && !distributions.isJsonNull()) {
+
+                distributions.getAsJsonArray().forEach(d -> {
+                    JsonObject distribution = d.getAsJsonObject();
+                    JsonElement accessService = distribution.get("accessService");
+
+                    if (accessService != null && !accessService.isJsonNull() && accessService.isJsonObject() && !accessService.isJsonArray()) {
+                        JsonArray accessServices = new JsonArray();
+                        accessServices.add(accessService);
+
+                        distribution.add("accessService", accessServices);
+                    }
+                });
+
+            }
+
+            return new Gson().fromJson(dataset, Dataset.class);
         }
 
         throw new Exception("More than one dataset match found, count=" + hits.length + " uri=" + uri);
